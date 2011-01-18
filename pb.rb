@@ -1,6 +1,10 @@
 #!/usr/bin/ruby
 require 'camping'
 
+require 'boggle_solver'
+puts "loading Boggle solver.."
+$solver = BoggleSolver::Solver.new("boggle.dict")
+puts $solver
 
 Camping.goes :Pb
 
@@ -46,14 +50,9 @@ module Pb::Controllers
                 require 'boggle_board_generator'
                 board = BoggleBoardGenerator.new
 
-                require 'boggle_server'
-
-                if not BoggleServer::server_running?
-                    puts "Boggle server not running, I don't know why"
-                end
-
-                y = board.to_input_s.split(//).map { |l| l == 'q' ? 'qu' : l }.enum_slice(4).to_a
-                solutions = BoggleServer.server_solve(y)
+                #y = board.to_input_s.split(//).map { |l| l == 'q' ? 'qu' : l }.enum_slice(4).to_a
+                #solutions = [] #BoggleServer.server_solve(y)
+                solutions = $solver.solve(board.board_2d)
                 @g = Game.create(:name=>name, :board=>board, :solutions => solutions)
             end
             render :game
@@ -62,7 +61,7 @@ module Pb::Controllers
         def post(name)
             @g = Game.find_by_name(name)
             @input.guess
-            "%s" % ( @g.solutions.include? (@input.guess) ) 
+            "%s" % ( @g.solutions.include?(@input.guess) ) 
         end
     end
 end
