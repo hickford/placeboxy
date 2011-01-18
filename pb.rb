@@ -4,7 +4,7 @@ require 'pusher'
 require 'boggle_solver'
 require 'erb'
 puts "loading Boggle solver.."
-$solver = BoggleSolver::Solver.new("short.dict")
+$solver = BoggleSolver::Solver.new("boggle.dict")
 puts $solver
 
 Camping.goes :Pb
