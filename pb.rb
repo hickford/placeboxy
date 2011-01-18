@@ -1,16 +1,18 @@
 #!/usr/bin/ruby
 require 'camping'
-
+require 'pusher'
 require 'boggle_solver'
+require 'erb'
 puts "loading Boggle solver.."
-$solver = BoggleSolver::Solver.new("boggle.dict")
+$solver = BoggleSolver::Solver.new("short.dict")
 puts $solver
 
 Camping.goes :Pb
 
 module Pb::Models
   class Game < Base
-    serialize :solutions
+    serialize :solutions, Array
+    serialize :guesses, Array
   end
   
   class BasicFields < V 1.0
@@ -19,6 +21,7 @@ module Pb::Models
       t.string :name
       t.text   :board
       t.text   :solutions
+      t.text    :guesses
       # This gives us created_at and updated_at
       t.timestamps
       end
@@ -45,25 +48,36 @@ module Pb::Controllers
 
     class GameX
         def get(name)
+            @name = name
             @g = Game.find_by_name(name)
             if not @g
                 require 'boggle_board_generator'
                 board = BoggleBoardGenerator.new
-
-                #y = board.to_input_s.split(//).map { |l| l == 'q' ? 'qu' : l }.enum_slice(4).to_a
-                #solutions = [] #BoggleServer.server_solve(y)
                 solutions = $solver.solve(board.board_2d)
-                @g = Game.create(:name=>name, :board=>board, :solutions => solutions)
+                @g = Game.create(:name=>name, :board=>board, :solutions => solutions, :guesses => [])
             end
             render :game
         end
 
         def post(name)
             @g = Game.find_by_name(name)
-            @input.guess
-            "%s" % ( @g.solutions.include?(@input.guess) ) 
+            correct= ( @g.solutions.include?(@input.guess) ) 
+
+            if correct
+                @g.guesses << @input.guess
+                @g.save
+            end
+            redirect R(GameX,name)
+
         end
     end
+
+  class Js < R '/pb.js'
+    def get
+        @headers['Content-Type'] = 'text/javascript'
+        ERB.new(File.read('pb.js')).result
+    end
+  end
 end
 
 module Pb::Views
@@ -73,9 +87,12 @@ module Pb::Views
         title "Placeboxy"
         #link :rel => 'stylesheet',:type => 'text/css',:href => '/styles.css'
         script "", :type => 'text/javascript', :src => 'https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'
+        script "", :type => 'text/javascript', :src => 'http://js.pusherapp.com/1.6/pusher.min.js'
+        script "", :type => 'text/javascript', :src => '/pb.js'
       end
       body { self << yield }
     end
+    p.connected! "not connected"
     p do
         a "home", :href=>R(Index)
     end
@@ -93,10 +110,16 @@ module Pb::Views
         textarea.board @g.board.to_s , "rows"=>"4"
         p.solutions @g.solutions.join(",")
 
-        form :action => R(GameX,@g.name), :method => :post do
-          input "", :type => "text", :name => :guess
+        form.form! :action => R(GameX,@g.name), :method => :post do
+          input.guess! "", :type => "text", :name => :guess
             br
           input :type => :submit, :value => "guess!"
+        end
+
+        ul.guesses do
+            @g.guesses.each do |guess|
+                li guess
+            end
         end
 
   end
