@@ -14,14 +14,14 @@ module Pb
     # set :views, File.dirname(__FILE__) + '/views' 
 
      # secret
+    environment = ENV['DATABASE_URL'] ? 'production' : 'development'
     configsession = 'config/session'
     if File.exists?(configsession)
         secret = File.read(configsession)
     else
         secret = ActiveSupport::SecureRandom.hex 
-        begin
+        if environment == 'development'
             File.open(configsession, 'w') {|f| f.write(secret) }
-        else
         end
     end   
     set :secret, secret
