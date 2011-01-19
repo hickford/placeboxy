@@ -12,9 +12,6 @@ Camping.goes :Pb
 module Pb 
     # Path to where you want to store the templates 
     set :views, File.dirname(__FILE__) + '/views' 
-
-    set :secret, "can you keep a secret?" #File.read("config/session")
-    include Camping::Session
 end 
 
 module Pb::Models
@@ -67,6 +64,17 @@ def Pb.create
         # Pusher.app_id , Pusher.key , Pusher.secret
         require './config/pusher/development.rb'
     end
+
+    # secret
+    configsession = 'config/session'
+    if File.exists?(configsession)
+        secret = File.read(configsession)
+    else
+        secret = ActiveSupport::SecureRandom.hex 
+        File.open(configsession, 'w') {|f| f.write(secret) }
+    end   
+    set :secret, secret
+    include Camping::Session   
 
     dictionary = (environment == 'production') ? 'boggle.dict' : 'short.dict'
     puts "importing dictionary %s (this takes a few seconds)" % dictionary
