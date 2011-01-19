@@ -8,10 +8,24 @@ require 'boggle_solver'
 require 'boggle_board_generator'
 
 Camping.goes :Pb
-
+  
 module Pb 
     # Path to where you want to store the templates 
     # set :views, File.dirname(__FILE__) + '/views' 
+
+     # secret
+    configsession = 'config/session'
+    if File.exists?(configsession)
+        secret = File.read(configsession)
+    else
+        secret = ActiveSupport::SecureRandom.hex 
+        begin
+            File.open(configsession, 'w') {|f| f.write(secret) }
+        else
+        end
+    end   
+    set :secret, secret
+    include Camping::Session   
 end 
 
 module Pb::Models
@@ -23,7 +37,6 @@ module Pb::Models
       class GameFields < V 1.0
         def self.up
           create_table Game.table_name do |t|
-          t.string :name
           t.text   :board
           t.text   :solutions
           t.text   :guesses
@@ -64,29 +77,18 @@ def Pb.create
         # Pusher.app_id , Pusher.key , Pusher.secret
         require './config/pusher/development.rb'
     end
-
-    # secret
-    configsession = 'config/session'
-    if File.exists?(configsession)
-        secret = File.read(configsession)
-    else
-        secret = ActiveSupport::SecureRandom.hex 
-        File.open(configsession, 'w') {|f| f.write(secret) }
-    end   
-    set :secret, secret
-    include Camping::Session   
-
     dictionary = (environment == 'production') ? 'boggle.dict' : 'short.dict'
     puts "importing dictionary %s (this takes a few seconds)" % dictionary
     $solver = BoggleSolver::Solver.new(dictionary)
     puts $solver
 end
-
+ 
 module Pb::Controllers
   class Index
     def get
           requires_login!
           @games = Game.all(:order=>"updated_at DESC",:limit=>3) 
+          @users = User.all(:order=>"score DESC", :limit=>3)
           render :home
     end
   end
@@ -107,15 +109,18 @@ module Pb::Controllers
 
     class Login
         def get
+            if logged_in?
+                redirect Index
+            end
             render :login
         end
 
         def post
             @input.user.strip!
             unless @input.user.empty?
-                @u = User.find_or_create_by_name(@input.user)
+                u = User.find_or_create_by_name(@input.user)
                 @state.user_name = @input.user
-                @state.user_id = @u.id
+                @state.user_id = u.id
             end
             redirect Index
         end
@@ -129,39 +134,42 @@ module Pb::Controllers
     end
 
     class GameX
-        def get(name)
+        def get(id)
             requires_login!
-            @name = name
-            @g = Game.find_by_name(name)
+            @id = id
+            @g = Game.find_by_id(id)
             unless @g
-                board = BoggleBoardGenerator.new
-                solutions = $solver.solve(board.board_2d)
-                @g = Game.create(:name=>name, :board=>board, :solutions => solutions, :guesses => [])
+                "no game with id %d" % id
+                throw :halt 
             end
             render :game
         end
 
-        def post(name)
+        def post(id)
             requires_login!
-            # u = User.find(@input.user_id)
-            @g = Game.find_by_name(name)
+            u = User.find(@state.user_id)
+            g = Game.find(id)
             @input.guess.downcase!
-            correct = ( @g.solutions.include?(@input.guess) ) 
+            correct = ( g.solutions.include?(@input.guess) ) 
             if correct
-                @g.guesses << @input.guess
-                @g.save
-                #u.score += @input.guess.len
-                #u.save
+                unless g.guesses.include?(@input.guess)
+                    g.guesses << @input.guess
+                    g.save
+                    u.score += @input.guess.length
+                    u.save
+                end
             end
-            redirect R(GameX,name)
-
+            redirect R(GameX,id)
         end
     end
 
     class New
         def get
             requires_login!
-            redirect R(GameX, ActiveSupport::SecureRandom.hex )
+            board = BoggleBoardGenerator.new
+            solutions = $solver.solve(board.board_2d)
+            g = Game.create(:board=>board, :solutions => solutions, :guesses => [])
+            redirect R(GameX,g.id)
         end
     end
 
@@ -198,37 +206,42 @@ module Pb::Views
         script "", :type => 'text/javascript', :src => 'http://js.pusherapp.com/1.6/pusher.min.js'
         script "", :type => 'text/javascript', :src => '/pb.js'
       end
-        text ' <a href="https://github.com/matt-hickford/placeboxy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets1.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_gray_6d6d6d.png&path=" alt="Fork me on GitHub"></a> '
       body do
+        text ' <a href="https://github.com/matt-hickford/placeboxy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets1.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_gray_6d6d6d.png&path=" alt="Fork me on GitHub"></a> '
             h1 "Placeboxy"
             self << yield
             p.connected! "not connected"
             if logged_in?
-                #u = User.find(@state.user_id)
                 p do
                     a "logout", :href=>R(Logout)
-                    #text " (you are %s (%s))" % [u.name,u.score]
                     text " (you are %s)" % @state.user_name
                 end
             end
-            p { a "home", :href=>R(Index) }
           end
       end
     end
 
     def home
-        p "Hello %s %s" % [ @state.user_name, @state.user_id]
+        p "Hello %s" % @state.user_name
         p do
             a "new game", :href => R(New)
         end
+        h2 "Top scoring players"
+        ul do
+            @users.each do |user|
+                li "%s %d" % [user.name,user.score]
+            end
+        end
+
         h2 "Recent games"
         ul do
             @games.each do |game|
-                li do
-                    a game.name, :href => R(GameX,game.name)
-                end
+                li { a game.id, :href => R(GameX,game.id) }
             end
         end
+
+
+
     end
 
     def login
@@ -240,11 +253,11 @@ module Pb::Views
     end
 
   def game
-        p.name @g.name
+        p.name "Game %d" % @g.id
         textarea.board @g.board.to_s , "rows"=>"4"
         p.solutions @g.solutions.join(",")
 
-        form.form! :action => R(GameX,@g.name), :method => :post do
+        form.form! :action => R(GameX,@g.id), :method => :post do
           input.input! "", :type => "text", :name => :guess
             br
           input :type => :submit, :value => "guess!"
@@ -256,6 +269,8 @@ module Pb::Views
             end
         end
 
+
+        p { a "home", :href=>R(Index) }
   end
 end
 
