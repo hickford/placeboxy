@@ -11,7 +11,7 @@ Camping.goes :Pb
 
 module Pb 
     # Path to where you want to store the templates 
-    set :views, File.dirname(__FILE__) + '/views' 
+    # set :views, File.dirname(__FILE__) + '/views' 
 end 
 
 module Pb::Models
@@ -26,7 +26,7 @@ module Pb::Models
           t.string :name
           t.text   :board
           t.text   :solutions
-          t.text    :guesses
+          t.text   :guesses
           # This gives us created_at and updated_at
           t.timestamps
           end
@@ -44,7 +44,7 @@ module Pb::Models
         def self.up
           create_table User.table_name do |t|
           t.string :name
-          t.integer :score
+          t.integer :score, :default => 0
           # This gives us created_at and updated_at
           t.timestamps
           end
@@ -93,11 +93,10 @@ module Pb::Controllers
 
     class PusherAuth
         def get
-             if @state.user
-              auth = Pusher[@input.channel_name].authenticate(@input.socket_id, :user_id => @state.user)
+             if logged_in?
+              # auth = Pusher[@input.channel_name].authenticate(@input.socket_id, :user_id => @state.user)
               #render :json => auth
               # broken
-              
             else
               @status = 403
               "Not authorized"
@@ -114,7 +113,9 @@ module Pb::Controllers
         def post
             @input.user.strip!
             unless @input.user.empty?
-                @state.user = @input.user
+                @u = User.find_or_create_by_name(@input.user)
+                @state.user_name = @input.user
+                @state.user_id = @u.id
             end
             redirect Index
         end
@@ -142,13 +143,15 @@ module Pb::Controllers
 
         def post(name)
             requires_login!
+            # u = User.find(@input.user_id)
             @g = Game.find_by_name(name)
             @input.guess.downcase!
-            correct= ( @g.solutions.include?(@input.guess) ) 
-
+            correct = ( @g.solutions.include?(@input.guess) ) 
             if correct
                 @g.guesses << @input.guess
                 @g.save
+                #u.score += @input.guess.len
+                #u.save
             end
             redirect R(GameX,name)
 
@@ -173,11 +176,16 @@ end
 
   module Pb::Helpers
     def requires_login!
-      unless @state.user
+      unless logged_in?
         redirect Pb::Controllers::Login     # ugh, make this less explicit
         throw :halt
       end
     end
+
+    def logged_in?
+        @state.key?('user_id')
+    end
+
   end
 
 module Pb::Views
@@ -195,21 +203,21 @@ module Pb::Views
             h1 "Placeboxy"
             self << yield
             p.connected! "not connected"
-            if @state.user
+            if logged_in?
+                #u = User.find(@state.user_id)
                 p do
                     a "logout", :href=>R(Logout)
-                    text " (you are %s)" % @state.user
+                    #text " (you are %s (%s))" % [u.name,u.score]
+                    text " (you are %s)" % @state.user_name
                 end
             end
-            p do
-                a "home", :href=>R(Index)
-            end
+            p { a "home", :href=>R(Index) }
           end
       end
     end
 
     def home
-        p "Hello %s" % @state.user
+        p "Hello %s %s" % [ @state.user_name, @state.user_id]
         p do
             a "new game", :href => R(New)
         end

@@ -3,6 +3,7 @@ $(function(){
     $('#input').focus()
 
     var socket = new Pusher( '<%= Pusher.key %>'); 
+
     socket.bind('pusher:connection_established', function () {
         $('#connected').text('connected');
     });
