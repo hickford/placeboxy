@@ -13,7 +13,7 @@ module Pb
     # Path to where you want to store the templates 
     set :views, File.dirname(__FILE__) + '/views' 
 
-    set :secret, File.read("config/session")
+    set :secret, "can you keep a secret?" #File.read("config/session")
     include Camping::Session
 end 
 
