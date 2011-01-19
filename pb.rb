@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 require 'camping'
+require 'camping/session'
 require 'pusher'
 require 'erb'
 require 'active_support/secure_random'
@@ -7,6 +8,14 @@ require 'boggle_solver'
 require 'boggle_board_generator'
 
 Camping.goes :Pb
+
+module Pb 
+    # Path to where you want to store the templates 
+    set :views, File.dirname(__FILE__) + '/views' 
+    
+    set :secret, "oh yeah!"
+    include Camping::Session
+end 
 
 module Pb::Models
   class Game < Base
@@ -56,6 +65,20 @@ module Pb::Controllers
     end
   end
 
+    class Login
+        def post
+            @state["user"] = @input.user
+            redirect Index
+        end
+    end
+
+    class Logout
+        def get
+            @state.clear
+            redirect Index
+        end
+    end
+
     class GameX
         def get(name)
             @name = name
@@ -90,11 +113,6 @@ module Pb::Controllers
   end
 end
 
-module Pb 
-    # Path to where you want to store the templates 
-    set :views, File.dirname(__FILE__) + '/views' 
-end 
-
 module Pb::Views
   def layout
     html do
@@ -108,6 +126,11 @@ module Pb::Views
       body { self << yield }
     end
     p.connected! "not connected"
+    if @state["user"]
+        p do
+            a "logout", :href=>R(Logout)
+        end
+    end
     p do
         a "home", :href=>R(Index)
     end
@@ -115,8 +138,17 @@ module Pb::Views
 
     def home
         h1 "Placeboxy"
-        p do
-            a "new game", :href => R(GameX, @name)
+        if @state["user"]
+            p "Hello %s" % @state["user"]
+            p do
+                a "new game", :href => R(GameX, @name)
+            end
+        else
+            form.login! :action => R(Login), :method => :post do
+                p "To play, I need your name"
+                input.input! "", :type => "text", "name" => :user
+                input :type => :submit, :value => "login"
+            end
         end
     end
 
@@ -126,7 +158,7 @@ module Pb::Views
         p.solutions @g.solutions.join(",")
 
         form.form! :action => R(GameX,@g.name), :method => :post do
-          input.guess! "", :type => "text", :name => :guess
+          input.input! "", :type => "text", :name => :guess
             br
           input :type => :submit, :value => "guess!"
         end
