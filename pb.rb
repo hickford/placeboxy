@@ -1,11 +1,10 @@
 #!/usr/bin/ruby
 require 'camping'
 require 'pusher'
-require 'boggle_solver'
 require 'erb'
-puts "loading Boggle solver.."
-$solver = BoggleSolver::Solver.new("boggle.dict")
-puts $solver
+require 'active_support/secure_random'
+require 'boggle_solver'
+require 'boggle_board_generator'
 
 Camping.goes :Pb
 
@@ -34,13 +33,24 @@ module Pb::Models
 end
 
 def Pb.create
-  Pb::Models.create_schema
+    Pb::Models.create_schema
+
+    environment = ENV['DATABASE_URL'] ? 'production' : 'development'
+    if environment == 'development'
+        # Pusher.app_id , Pusher.key , Pusher.secret
+        require './config/pusher/development.rb'
+    end
+
+    dictionary = (environment == 'production') ? 'boggle.dict' : 'short.dict'
+    puts "importing dictionary %s (this may take some time)" % dictionary
+    $solver = BoggleSolver::Solver.new(dictionary)
+    puts $solver
 end
 
 module Pb::Controllers
   class Index
     def get
-      require 'active_support/secure_random'
+
       @name = ActiveSupport::SecureRandom.hex
       render :home
     end
@@ -51,7 +61,7 @@ module Pb::Controllers
             @name = name
             @g = Game.find_by_name(name)
             if not @g
-                require 'boggle_board_generator'
+
                 board = BoggleBoardGenerator.new
                 solutions = $solver.solve(board.board_2d)
                 @g = Game.create(:name=>name, :board=>board, :solutions => solutions, :guesses => [])
@@ -79,6 +89,11 @@ module Pb::Controllers
     end
   end
 end
+
+module Pb 
+    # Path to where you want to store the templates 
+    set :views, File.dirname(__FILE__) + '/views' 
+end 
 
 module Pb::Views
   def layout
