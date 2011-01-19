@@ -18,27 +18,45 @@ module Pb
 end 
 
 module Pb::Models
-  class Game < Base
-    serialize :solutions, Array
-    serialize :guesses, Array
-  end
-  
-  class BasicFields < V 1.0
-    def self.up
-      create_table Game.table_name do |t|
-      t.string :name
-      t.text   :board
-      t.text   :solutions
-      t.text    :guesses
-      # This gives us created_at and updated_at
-      t.timestamps
+      class Game < Base
+        serialize :solutions, Array
+        serialize :guesses, Array
       end
-    end
 
-    def self.down
-      drop_table Game.table_name
-    end
-  end
+      class GameFields < V 1.0
+        def self.up
+          create_table Game.table_name do |t|
+          t.string :name
+          t.text   :board
+          t.text   :solutions
+          t.text    :guesses
+          # This gives us created_at and updated_at
+          t.timestamps
+          end
+        end
+
+        def self.down
+          drop_table Game.table_name
+        end
+      end
+
+        class User < Base
+        end
+
+      class UserFields < V 1.1
+        def self.up
+          create_table User.table_name do |t|
+          t.string :name
+          t.integer :score
+          # This gives us created_at and updated_at
+          t.timestamps
+          end
+         end
+
+            def self.down
+               drop_table User.table_name
+            end
+       end
 end
 
 def Pb.create
@@ -59,13 +77,26 @@ end
 module Pb::Controllers
   class Index
     def get
-        if not @state.user
-            redirect R(Login)
-        end
-      @games = Game.all(:order=>"updated_at DESC",:limit=>3)  
-      render :home
+          requires_login!
+          @games = Game.all(:order=>"updated_at DESC",:limit=>3) 
+          render :home
     end
   end
+
+    class PusherAuth
+        def get
+             if @state.user
+              auth = Pusher[@input.channel_name].authenticate(@input.socket_id, :user_id => @state.user)
+              #render :json => auth
+              # broken
+              
+            else
+              @status = 403
+              "Not authorized"
+            end
+
+        end
+    end
 
     class Login
         def get
@@ -74,8 +105,8 @@ module Pb::Controllers
 
         def post
             @input.user.strip!
-            if not @input.user.empty?
-                @state["user"] = @input.user
+            unless @input.user.empty?
+                @state.user = @input.user
             end
             redirect Index
         end
@@ -90,9 +121,10 @@ module Pb::Controllers
 
     class GameX
         def get(name)
+            requires_login!
             @name = name
             @g = Game.find_by_name(name)
-            if not @g
+            unless @g
                 board = BoggleBoardGenerator.new
                 solutions = $solver.solve(board.board_2d)
                 @g = Game.create(:name=>name, :board=>board, :solutions => solutions, :guesses => [])
@@ -101,6 +133,7 @@ module Pb::Controllers
         end
 
         def post(name)
+            requires_login!
             @g = Game.find_by_name(name)
             @input.guess.downcase!
             correct= ( @g.solutions.include?(@input.guess) ) 
@@ -116,6 +149,7 @@ module Pb::Controllers
 
     class New
         def get
+            requires_login!
             redirect R(GameX, ActiveSupport::SecureRandom.hex )
         end
     end
@@ -128,6 +162,15 @@ module Pb::Controllers
     end
   end
 end
+
+  module Pb::Helpers
+    def requires_login!
+      unless @state.user
+        redirect Pb::Controllers::Login     # ugh, make this less explicit
+        throw :halt
+      end
+    end
+  end
 
 module Pb::Views
   def layout
@@ -144,10 +187,10 @@ module Pb::Views
             h1 "Placeboxy"
             self << yield
             p.connected! "not connected"
-            if @state["user"]
+            if @state.user
                 p do
                     a "logout", :href=>R(Logout)
-                    text " from %s" % @state["user"]
+                    text " (you are %s)" % @state.user
                 end
             end
             p do
@@ -158,7 +201,7 @@ module Pb::Views
     end
 
     def home
-        p "Hello %s" % @state["user"]
+        p "Hello %s" % @state.user
         p do
             a "new game", :href => R(New)
         end
