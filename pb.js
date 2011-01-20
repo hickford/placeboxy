@@ -4,8 +4,9 @@ $(function(){
 
     var socket = new Pusher( '<%= Pusher.key %>'); 
 
-    socket.bind('pusher:connection_established', function () {
-        $('#connected').text('connected');
+    socket.bind('pusher:connection_established', function (x) {
+          $('#connected').text('connected');
+          // alert(x.socket_id); // works
     });
 
     var myPresenceChannel = socket.subscribe('presence-x')

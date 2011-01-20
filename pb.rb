@@ -6,7 +6,7 @@ require 'erb'
 require 'active_support/secure_random'
 require 'boggle_solver'
 require 'boggle_board_generator'
-
+require 'json'
 Camping.goes :Pb
   
 module Pb 
@@ -96,14 +96,14 @@ module Pb::Controllers
     class PusherAuth
         def get
              if logged_in?
-              # auth = Pusher[@input.channel_name].authenticate(@input.socket_id, :user_id => @state.user)
-              #render :json => auth
-              # broken
+              auth = Pusher[@input.channel_name].authenticate(@input.socket_id,:user_id => @state.user_id , :user_info => {:name => @state.user_name} )
+                @headers['Content-Type'] = 'text/plain' #'application/json'
+                JSON.dump(auth)
             else
               @status = 403
+              @headers['Content-Type'] = 'text/plain'
               "Not authorized"
             end
-
         end
     end
 
@@ -139,10 +139,11 @@ module Pb::Controllers
             @id = id
             @g = Game.find_by_id(id)
             unless @g
+                @status = 404
                 "no game with id %d" % id
-                throw :halt 
+            else
+                render :game
             end
-            render :game
         end
 
         def post(id)
@@ -222,15 +223,9 @@ module Pb::Views
     end
 
     def home
-        p "Hello %s" % @state.user_name
+        #p "Hello %s" % @state.user_name
         p do
             a "new game", :href => R(New)
-        end
-        h2 "Top scoring players"
-        ul do
-            @users.each do |user|
-                li "%s %d" % [user.name,user.score]
-            end
         end
 
         h2 "Recent games"
@@ -240,8 +235,12 @@ module Pb::Views
             end
         end
 
-
-
+        h2 "Top scoring players"
+        ul do
+            @users.each do |user|
+                li "%s %d" % [user.name,user.score]
+            end
+        end
     end
 
     def login
@@ -253,7 +252,7 @@ module Pb::Views
     end
 
   def game
-        p.name "Game %d" % @g.id
+        h2 "Game %d" % @g.id
         textarea.board @g.board.to_s , "rows"=>"4"
         p.solutions @g.solutions.join(",")
 
