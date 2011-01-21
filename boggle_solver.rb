@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-require 'trie'
+require 'trie'  # fast_trie
 require 'set'
 
 
@@ -103,12 +103,10 @@ class BoggleSolver
     end
 
     
-    protected
-
-
     # Recursively try to find words by adding this letter to word,
     # looking for it in our dictionary trie, and adding found words to
     # results.
+    protected
     def find_words(node,letter,results)
       letter.used = true  # open block by making letter used
       
@@ -142,7 +140,7 @@ class BoggleSolver
 end  # module BoggleSolver
 
 if $0 == __FILE__
-    require 'boggle_board_generator.rb'
+    require 'boggle_board_generator'
     board = BoggleBoardGenerator.new
     puts board
 
