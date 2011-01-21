@@ -77,8 +77,8 @@ def Pb.create
         # Pusher.app_id , Pusher.key , Pusher.secret
         require './config/pusher/development.rb'
     end
-    dictionary = (environment == 'production') ? 'boggle.dict' : 'short.dict'
-    puts "importing dictionary %s (this takes a few seconds)" % dictionary
+    dictionary = 'boggle.dict'
+    puts "importing dictionary #{dictionary} (this takes a few seconds)"
     $solver = BoggleSolver::Solver.new(dictionary)
     puts $solver
 end
@@ -140,7 +140,7 @@ module Pb::Controllers
             @g = Game.find_by_id(id)
             unless @g
                 @status = 404
-                "no game with id %d" % id
+                "no game with id #{id}"
             else
                 render :game
             end
@@ -216,7 +216,7 @@ module Pb::Views
             if logged_in?
                 p do
                     a "logout", :href=>R(Logout)
-                    text " (you are %s)" % @state.user_name
+                    text " (you are #{@state.user_name})" 
                 end
             end
           end
@@ -224,7 +224,6 @@ module Pb::Views
     end
 
     def home
-        #p "Hello %s" % @state.user_name
         p do
             a "new game", :href => R(New)
         end
@@ -239,7 +238,7 @@ module Pb::Views
         h2 "Top scoring players"
         ul do
             @users.each do |user|
-                li "%s %d" % [user.name,user.score]
+                li "#{user.name} #{user.score}" 
             end
         end
 
@@ -257,7 +256,7 @@ module Pb::Views
     end
 
   def game
-        h2 "Game %d" % @g.id
+        h2 "Game #{@g.id}"
         textarea.board @g.board.to_s , "rows"=>"4"
         p.solutions @g.solutions.join(",")
 

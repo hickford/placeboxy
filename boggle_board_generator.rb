@@ -24,26 +24,15 @@ class BoggleBoardGenerator
     ['a', 'b', 'i', 'l', 'y', 't'],
     ['g', 'k', 'y', 'l', 'e', 'u']]
 
-  #@@random_seed = 10202007      # default initial seed
-
   attr_reader :board
   
-  
   def initialize()
-    #srand @@random_seed         # to insure repeatabilty set seed now
     indices = (0...BoggleDie.size).to_a.sort_by { rand }
-    #@@random_seed = rand 2**31  # pick next random seed based on previous
 
     # creates an array with the dice randomly re-ordered and then
     # rolls each of the dice
     @board = BoggleDie.values_at(*indices).map { |die| die[rand(die.size)] }
   end
-
-
-  #def self.seed=(new_seed)
-  #  @@random_seed = new_seed
-  #end
-
 
   # Returns an array of arrays, where outer arrays contains the rows
   # on the board, and each row is an array that contains the letters
@@ -51,11 +40,6 @@ class BoggleBoardGenerator
   def board_2d
     # slice the array into groups of 4 to create 2d-array
     @board.enum_slice(4).to_a
-  end
-
-
-  def to_input_s
-    board.join('').gsub('qu', 'q')
   end
 
 
@@ -69,14 +53,7 @@ end
 
 
 if $0 == __FILE__
-  #BoggleBoardGenerator.seed = 555
-
-  5.times do
     b = BoggleBoardGenerator.new
-    p b.board      # 1-dimensional array
-    p b.board_2d   # 2-dimensional array
     puts b         # 4-line string
-    puts b.to_input_s
-  end
 end
 

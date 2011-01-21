@@ -1,10 +1,4 @@
 #!/usr/bin/env ruby
-# File boggle_solver.rb
-# Copyright 2007 J. Eric Ivancich, all rights reserved.
-# Licensed under the Creative Commons Attribution Non-commercial Share
-# Alike license (see: http://creativecommons.org/licenses/by-nc-sa/3.0/).
-
-
 require 'trie'
 require 'set'
 
@@ -89,10 +83,10 @@ class BoggleSolver
 
   # Loads a dictionary and solves multiple boards using that dictionary.
   class Solver
-
     # Provide a dictioary file used to solve the Boggle boards.
     def initialize(dictionary_file)
-      @dictionary = Trie.from_dictionary dictionary_file
+       @trie = Trie.new
+       IO::foreach(dictionary_file) { |line| @trie.add(line.chomp) }
     end
 
 
@@ -101,8 +95,9 @@ class BoggleSolver
     def solve(board_config)
       board = Board.new(board_config)
       results = Set.new
-      board.process do |l|
-        find_words(l, "", @dictionary, results)
+      board.process do |letter|
+        #find_words(letter, "", @trie.root, results)
+        find_words(@trie.root,letter,results)
       end
       results.to_a.sort_by { |w| [-w.size, w] }
     end
@@ -114,27 +109,30 @@ class BoggleSolver
     # Recursively try to find words by adding this letter to word,
     # looking for it in our dictionary trie, and adding found words to
     # results.
-    def find_words(letter, word, dict, results)
+    def find_words(node,letter,results)
       letter.used = true  # open block by making letter used
       
-      word = word + letter.letter  # make new word w/ letter
-
       # march down dictionary trie; note: because one die contains a
       # side w/ "qu", we use generalize to allow a die to contain any
       # number of letters and march through *all* of them using a loop
-      0.upto(letter.letter.size - 1) do |index|
-        dict = dict.subtrie(letter.letter[index, 1])
+      letter.letter.each do |x|
+        node = node.walk(x)
+        if node.nil?
+            letter.used = false
+            return
+        end
+      end
+    
+      # if this specific word so far is in the dictionary add it to the results
+      if node.terminal? && node.full_state.size >= 3
+        results << node.full_state
       end
 
       # if there are any possible words once we get here...
-      if dict.any?
-        # if this specific word so far is in the dictionary
-        # add it to the results
-        results << word if word.size >= 3 && dict.include?(word)
-
+      if not node.leaf?
         # try to extend with all unused neighboring letters
         letter.unused_neighbors.each do |l|
-          find_words(l, word, dict, results)
+          find_words(node,l,results)
         end
       end
       
@@ -142,4 +140,14 @@ class BoggleSolver
     end
   end  # class Solver
 end  # module BoggleSolver
+
+if $0 == __FILE__
+    require 'boggle_board_generator.rb'
+    board = BoggleBoardGenerator.new
+    puts board
+
+    solver = BoggleSolver::Solver.new('boggle.dict')
+    solutions = solver.solve(board.board_2d)
+    p solutions
+end
 
