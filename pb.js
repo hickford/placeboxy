@@ -9,23 +9,38 @@ $(function(){
           // alert(x.socket_id); // works
     });
 
-    var myPresenceChannel = socket.subscribe('presence-x')
+    socket.bind('pusher:connection_disconnected', function(){
+          $('#connected').text('diconnected');
+    })
 
-    myPresenceChannel.bind('pusher:subscription_succeeded', function(member_list){
+    socket.bind('pusher:connection_disconnected', function(){
+           $('#users').empty();
+    })
+
+    var myPresenceChannel = socket.subscribe('presence-x');
+
+      function addMember (member) {
+                $('<li>').attr('id',member.user_id).append(member.user_info.name).appendTo('#users');
+        }
+
+
+    myPresenceChannel.bind('pusher:subscription_succeeded', function(members){
       // iterate through the members and add them into the DOM
+            $.each(members, function (i, member) {  addMember(member) });
     })
 
     myPresenceChannel.bind('pusher:member_added', function(member){
-      // add this member onto my list, or optionally redraw from myPresenceChannel.members()
+            addMember(member);
     })
 
     myPresenceChannel.bind('pusher:member_removed', function(member){
       // remove this member from my list, or optionally redraw from myPresenceChannel.members()
+
+        $('#users').find('#' + member.user_id).remove();
+
     })
 
-    socket.bind('pusher:connection_disconnected', function(){
-      // clear the member list in the UI for consistency 
-    })
+
 
 
 });

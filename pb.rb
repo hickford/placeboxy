@@ -94,11 +94,11 @@ module Pb::Controllers
   end
 
     class PusherAuth
-        def get
-             if logged_in?
+        def post
+             if logged_in? and @input.include?('channel_name') and @input.include?('socket_id') 
               auth = Pusher[@input.channel_name].authenticate(@input.socket_id,:user_id => @state.user_id , :user_info => {:name => @state.user_name} )
-                @headers['Content-Type'] = 'text/plain' #'application/json'
-                JSON.dump(auth)
+                @headers['Content-Type'] = 'text/plain' # 'application/json' # technically correct
+                auth.to_json
             else
               @status = 403
               @headers['Content-Type'] = 'text/plain'
@@ -211,6 +211,7 @@ module Pb::Views
         text ' <a href="https://github.com/matt-hickford/placeboxy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets1.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_gray_6d6d6d.png&path=" alt="Fork me on GitHub"></a> '
             h1 "Placeboxy"
             self << yield
+
             p.connected! "not connected"
             if logged_in?
                 p do
@@ -241,6 +242,10 @@ module Pb::Views
                 li "%s %d" % [user.name,user.score]
             end
         end
+
+        h2 "Players on this page"
+        ul.users! {}    
+
     end
 
     def login
@@ -267,7 +272,6 @@ module Pb::Views
                 li guess
             end
         end
-
 
         p { a "home", :href=>R(Index) }
   end
