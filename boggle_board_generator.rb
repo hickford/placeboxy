@@ -39,7 +39,7 @@ class BoggleBoardGenerator
   # on a given row.
   def board_2d
     # slice the array into groups of 4 to create 2d-array
-    ruby1_8? ? @board.enum_slice(4).to_a : @board.each_slice(4).to_a
+    @board.each_slice(4).to_a
   end
 
 
