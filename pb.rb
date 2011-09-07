@@ -258,7 +258,7 @@ module Pb::Views
   def game
         h2 "Game #{@g.id}"
         textarea.board @g.board.to_s , "rows"=>"4"
-        p.solutions @g.solutions.join(",")
+        # p.solutions @g.solutions.join(",")
 
         form.form! :action => R(GameX,@g.id), :method => :post do
           input.input! "", :type => "text", :name => :guess
