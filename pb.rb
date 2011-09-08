@@ -3,7 +3,7 @@ require 'camping'
 require 'camping/session'
 require 'pusher'
 require 'erb'
-require 'active_support/secure_random'
+require 'securerandom' # 'active_support/secure_random'
 require 'boggle_solver'
 require 'boggle_board_generator'
 require 'json'
@@ -19,7 +19,7 @@ module Pb
     if File.exists?(configsession)
         secret = File.read(configsession)
     else
-        secret = ActiveSupport::SecureRandom.hex 
+        secret = SecureRandom.hex 
         if environment == 'development'
             File.open(configsession, 'w') {|f| f.write(secret) }
         end
