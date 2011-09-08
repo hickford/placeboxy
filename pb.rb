@@ -3,7 +3,7 @@ require 'camping'
 require 'camping/session'
 require 'pusher'
 require 'erb'
-require 'securerandom' # 'active_support/secure_random'
+require 'securerandom'
 require 'boggle_solver'
 require 'boggle_board_generator'
 require 'json'
@@ -75,7 +75,7 @@ def Pb.create
     environment = ENV['DATABASE_URL'] ? 'production' : 'development'
     if environment == 'development'
         # Pusher.app_id , Pusher.key , Pusher.secret
-        require './config/pusher/development.rb'
+        require './config/pusher.rb'
     end
     dictionary = 'boggle.dict'
     puts "importing dictionary #{dictionary} (this takes a few seconds)"
