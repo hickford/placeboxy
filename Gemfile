@@ -1,5 +1,6 @@
 ﻿source "https://rubygems.org"
 
+gem 'thin'
 gem 'activerecord', '3.0.3'
 gem 'camping', '2.1'
 gem 'markaby', '0.7.1'
