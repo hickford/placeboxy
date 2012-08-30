@@ -4,8 +4,8 @@ require 'camping/session'
 require 'pusher'
 require 'erb'
 require 'securerandom'
-require 'boggle_solver'
-require 'boggle_board_generator'
+require_relative 'boggle_solver'
+require_relative 'boggle_board_generator'
 require 'json'
 Camping.goes :Pb
   
