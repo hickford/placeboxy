@@ -1,7 +1,6 @@
-activerecord
-camping --version '>= 2.0'
-markaby
-json
-pusher
-fast_trie
-
+activerecord '3.0.3'
+camping --version '2.1'
+markaby '0.7.1'
+json '1.4.6'
+pusher '0.7.0'
+fast_trie '0.5.0'
