@@ -27,6 +27,7 @@ end
 
 module Pb::Models
       class Game < Base
+        serialize :board, BoggleBoardGenerator
         serialize :solutions, Array
         serialize :guesses, Array
       end
@@ -69,7 +70,7 @@ end
 def Pb.create
     Pb::Models.create_schema
 
-    environment = ENV['DATABASE_URL'] ? 'production' : 'development'
+    environment = ENV['RACK_ENV'] || 'development'
     if environment == 'development'
         # Pusher.app_id , Pusher.key , Pusher.secret
         require './config/pusher.rb'
@@ -95,7 +96,7 @@ module Pb::Controllers
         def post
              if logged_in? and @input.include?('channel_name') and @input.include?('socket_id') 
               auth = Pusher[@input.channel_name].authenticate(@input.socket_id,:user_id => @state.user_id , :user_info => {:name => @state.user_name} )
-                @headers['Content-Type'] = 'text/plain' # 'application/json' # technically correct
+                @headers['Content-Type'] = 'application/json' # technically correct # 'text/plain' 
                 auth.to_json
             else
               @status = 403
@@ -119,7 +120,6 @@ module Pb::Controllers
                 u = User.find_or_create_by_name(@input.user)
                 @state.user_name = @input.user
                 @state.user_id = u.id
-                puts @state
             end
             redirect Index
         end
@@ -139,7 +139,8 @@ module Pb::Controllers
             @g = Game.find_by_id(id)
             unless @g
                 @status = 404
-                "no game with id #{id}"
+                @message = "no game with id #{id}"
+                render :error
             else
                 render :game
             end
@@ -246,6 +247,11 @@ module Pb::Views
 
     end
 
+    def error
+        p @message        
+        p { a "home", :href=>R(Index) }
+    end
+
     def login
             form.login! :action => R(Login), :method => :post do
                 p "To play, I need your name"
@@ -256,7 +262,7 @@ module Pb::Views
 
   def game
         h2 "Game #{@g.id}"
-        textarea.board @g.board.to_s , "rows"=>"4"
+        textarea.board @g.board , "rows"=>"4"
         # p.solutions @g.solutions.join(",")
 
         form.form! :action => R(GameX,@g.id), :method => :post do
