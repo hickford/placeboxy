@@ -1,11 +1,11 @@
 #!/usr/bin/ruby
-environment = ENV['DATABASE_URL'] ? 'production' : 'development'
+require 'erb'
+require 'yaml'
+environment = ENV['RACK_ENV'] || 'development'
+dbconfig = YAML.load(ERB.new(File.read('config/database.yml')).result)
 
 require './pb.rb'
-
-dbconfig = YAML.load(File.read('config/database.yml'))
 Pb::Models::Base.establish_connection dbconfig[environment]
 Pb.create if Pb.respond_to? :create
-
 run Pb
 

@@ -10,9 +10,6 @@ require 'json'
 Camping.goes :Pb
   
 module Pb 
-    # Path to where you want to store the templates 
-    # set :views, File.dirname(__FILE__) + '/views' 
-
      # secret
     environment = ENV['DATABASE_URL'] ? 'production' : 'development'
     configsession = 'config/session'
