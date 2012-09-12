@@ -1,3 +1,5 @@
 config/session
 config/pusher.rb
 db/*
+*~
+

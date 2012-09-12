@@ -1,46 +1,50 @@
-$(function(){
-
-    $('#input').focus()
-
-    var socket = new Pusher( '<%= Pusher.key %>'); 
-
-    socket.bind('pusher:connection_established', function (x) {
-          $('#connected').text('connected');
-          // alert(x.socket_id); // works
+$(document).ready(function()
+{
+	/*
+    if ($('#input').length)
+	{
+		$('#input').focus()
+	}
+	*/
+	
+    var pusher = new Pusher( '<%= Pusher.key %>'); 
+    pusher.connection.bind('connected', function (x) {
+          $('#connected').text('Real-time connection');
     });
 
-    socket.bind('pusher:connection_disconnected', function(){
-          $('#connected').text('diconnected');
-    })
+    pusher.connection.bind('unavailable', function(){
+          $('#connected').text('Real-time connection unavaliable');
+    });
+	
+	pusher.connection.bind('disconnected', function(){
+          $('#connected').text('Real-time disconnected');
+    });
 
-    socket.bind('pusher:connection_disconnected', function(){
-           $('#users').empty();
-    })
+	
+	    pusher.connection.bind('connecting', function(){
+          $('#connected').text('Attempting real-time connection');
+    });
 
-    var myPresenceChannel = socket.subscribe('presence-x');
+	var myPresenceChannel = pusher.subscribe('presence-x');
 
-      function addMember (member) {
-                $('<li>').attr('id',member.user_id).append(member.user_info.name).appendTo('#users');
-        }
-
+	function addMember (member) {
+                $('<li>').attr('id',member.id).append(member.info.name).appendTo('#users');
+        };
 
     myPresenceChannel.bind('pusher:subscription_succeeded', function(members){
-      // iterate through the members and add them into the DOM
-            $.each(members, function (i, member) {  addMember(member) });
-    })
+      members.each(function(member) {
+		addMember(member) });
+    });
 
     myPresenceChannel.bind('pusher:member_added', function(member){
             addMember(member);
-    })
+    });
 
     myPresenceChannel.bind('pusher:member_removed', function(member){
       // remove this member from my list, or optionally redraw from myPresenceChannel.members()
 
         $('#users').find('#' + member.user_id).remove();
 
-    })
-
-
-
+    });
 
 });

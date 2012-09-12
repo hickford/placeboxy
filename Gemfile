@@ -8,5 +8,5 @@ gem 'json'
 gem 'pusher'
 gem 'fast_trie'
 gem "pg", :group => :production
-gem "sqlite3-ruby", :group => :development
+gem "sqlite3", :group => :development
 

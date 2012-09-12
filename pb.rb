@@ -84,7 +84,6 @@ end
 module Pb::Controllers
   class Index
     def get
-          puts @state
           requires_login!
           @games = Game.all(:order=>"updated_at DESC",:limit=>3) 
           @users = User.all(:order=>"score DESC", :limit=>3)
@@ -96,12 +95,13 @@ module Pb::Controllers
         def post
              if logged_in? and @input.include?('channel_name') and @input.include?('socket_id') 
               auth = Pusher[@input.channel_name].authenticate(@input.socket_id,:user_id => @state.user_id , :user_info => {:name => @state.user_name} )
-                @headers['Content-Type'] = 'application/json' # technically correct # 'text/plain' 
-                auth.to_json
+              @headers['Content-Type'] = 'application/json' # technically correct # 'text/plain' 
+              auth.to_json
             else
               @status = 403
               @headers['Content-Type'] = 'text/plain'
-              "Not authorized"
+              @message = "Authentication failed"
+			  render :error
             end
         end
     end
@@ -109,19 +109,20 @@ module Pb::Controllers
     class Login
         def get
             if logged_in?
-                redirect Index
+                return redirect Index
             end
             render :login
         end
 
         def post
+			if @input.user.nil? || @input.user.strip.empty?
+				return redirect Index
+			end
             @input.user.strip!
-            unless @input.user.empty?
-                u = User.find_or_create_by_name(@input.user)
-                @state.user_name = @input.user
-                @state.user_id = u.id
-            end
-            redirect Index
+			u = User.find_or_create_by_name(@input.user)
+			@state.user_name = @input.user
+			@state.user_id = u.id
+			redirect Index
         end
     end
 
@@ -209,10 +210,16 @@ module Pb::Views
       end
       body do
          text! ' <a href="https://github.com/matt-hickford/placeboxy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>'
-            h1 "Placeboxy"
-            self << yield
-
-            p.connected! "not connected"
+            a :href=>R(Index) do
+				h1 "Placeboxy"
+            end
+			
+			self << yield
+			
+			hr
+					
+            p.connected! ""
+			
             if logged_in?
                 p do
                     a "logout", :href=>R(Logout)
@@ -249,7 +256,6 @@ module Pb::Views
 
     def error
         p @message        
-        p { a "home", :href=>R(Index) }
     end
 
     def login
@@ -277,7 +283,6 @@ module Pb::Views
             end
         end
 
-        p { a "home", :href=>R(Index) }
   end
 end
 
