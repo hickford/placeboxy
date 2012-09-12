@@ -1,11 +1,9 @@
 $(document).ready(function()
 {
-	/*
     if ($('#input').length)
 	{
 		$('#input').focus()
 	}
-	*/
 	
     var pusher = new Pusher( '<%= Pusher.key %>'); 
     pusher.connection.bind('connected', function (x) {
