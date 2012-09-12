@@ -7,3 +7,6 @@ gem 'markaby', '0.7.2'
 gem 'json', '1.7.5'
 gem 'pusher', '0.9.4'
 gem 'fast_trie', '0.5.0'
+gem "pg", :group => :production
+gem "sqlite3-ruby", :group => :development
+
