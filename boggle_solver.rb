@@ -113,7 +113,7 @@ class BoggleSolver
       # march down dictionary trie; note: because one die contains a
       # side w/ "qu", we use generalize to allow a die to contain any
       # number of letters and march through *all* of them using a loop
-      letter.letter.each do |x|
+      letter.letter.each_char do |x|
         node = node.walk(x)
         if node.nil?
             letter.used = false
@@ -140,7 +140,7 @@ class BoggleSolver
 end  # module BoggleSolver
 
 if $0 == __FILE__
-    require 'boggle_board_generator'
+    require_relative 'boggle_board_generator'
     board = BoggleBoardGenerator.new
     puts board
 

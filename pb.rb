@@ -83,6 +83,7 @@ end
 module Pb::Controllers
   class Index
     def get
+          puts @state
           requires_login!
           @games = Game.all(:order=>"updated_at DESC",:limit=>3) 
           @users = User.all(:order=>"score DESC", :limit=>3)
@@ -118,6 +119,7 @@ module Pb::Controllers
                 u = User.find_or_create_by_name(@input.user)
                 @state.user_name = @input.user
                 @state.user_id = u.id
+                puts @state
             end
             redirect Index
         end
@@ -200,12 +202,12 @@ module Pb::Views
       head do
         title "Placeboxy"
         #link :rel => 'stylesheet',:type => 'text/css',:href => '/styles.css'
-        script "", :type => 'text/javascript', :src => 'https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'
-        script "", :type => 'text/javascript', :src => 'http://js.pusherapp.com/1.6/pusher.min.js'
+        script "", :type => 'text/javascript', :src => '//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js'
+        script "", :type => 'text/javascript', :src => 'http://js.pusher.com/1.12/pusher.min.js'
         script "", :type => 'text/javascript', :src => '/pb.js'
       end
       body do
-        text ' <a href="https://github.com/matt-hickford/placeboxy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets1.github.com/img/71eeaab9d563c2b3c590319b398dd35683265e85?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_gray_6d6d6d.png&path=" alt="Fork me on GitHub"></a> '
+         text! ' <a href="https://github.com/matt-hickford/placeboxy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>'
             h1 "Placeboxy"
             self << yield
 
@@ -247,7 +249,7 @@ module Pb::Views
     def login
             form.login! :action => R(Login), :method => :post do
                 p "To play, I need your name"
-                input.input! "", :type => "text", "name" => :user
+                input.input! :type => "text", "name" => :user
                 input :type => :submit, :value => "login"
             end
     end
@@ -258,7 +260,7 @@ module Pb::Views
         # p.solutions @g.solutions.join(",")
 
         form.form! :action => R(GameX,@g.id), :method => :post do
-          input.input! "", :type => "text", :name => :guess
+          input.input! :type => "text", :name => :guess
             br
           input :type => :submit, :value => "guess!"
         end
