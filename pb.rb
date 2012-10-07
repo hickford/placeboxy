@@ -286,4 +286,3 @@ module Pb::Views
   end
 end
 
-

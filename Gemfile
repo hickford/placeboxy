@@ -1,8 +1,7 @@
 ﻿source "https://rubygems.org"
 
-gem 'thin'
-gem 'activerecord'
 gem 'camping'
+gem 'activerecord'
 gem 'markaby'
 gem 'json'
 gem 'pusher'
