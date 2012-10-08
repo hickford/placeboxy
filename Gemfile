@@ -7,7 +7,8 @@ gem 'markaby'
 gem 'json'
 gem 'pusher'
 gem 'fast_trie'
-gem 'thin'
+gem 'thin', :group => :development
+gem 'unicorn', :group => :production
 
 gem "pg", :group => :production
 gem "dalli", :group => :production
