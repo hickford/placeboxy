@@ -7,5 +7,6 @@ gem 'json'
 gem 'pusher'
 gem 'fast_trie'
 gem "pg", :group => :production
+gem "memcache", :group => :production
 gem "sqlite3", :group => :development
 
