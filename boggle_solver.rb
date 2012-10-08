@@ -84,9 +84,9 @@ class BoggleSolver
   # Loads a dictionary and solves multiple boards using that dictionary.
   class Solver
     # Provide a dictioary file used to solve the Boggle boards.
-    def initialize(dictionary_file)
+    def initialize(words)
        @trie = Trie.new
-       IO::foreach(dictionary_file) { |line| @trie.add(line.chomp) }
+       words.each { |line| @trie.add(line.chomp) }
     end
 
 
@@ -144,7 +144,7 @@ if $0 == __FILE__
     board = BoggleBoardGenerator.new
     puts board
 
-    solver = BoggleSolver::Solver.new('boggle.dict')
+    solver = BoggleSolver::Solver.new(ARGF)
     solutions = solver.solve(board.board_2d)
     p solutions
 end

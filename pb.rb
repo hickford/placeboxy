@@ -73,10 +73,11 @@ def Pb.create
         # Pusher.app_id , Pusher.key , Pusher.secret
         require './config/pusher.rb'
     end
-    dictionary = 'boggle.dict'
-    puts "importing dictionary #{dictionary} (this takes a few seconds)"
-    $solver = BoggleSolver::Solver.new(dictionary)
-    puts $solver
+    File.open('boggle.dict') do |dictionary|
+        puts "importing dictionary #{dictionary} (this takes a few seconds)"
+        $solver = BoggleSolver::Solver.new(dictionary)
+        puts $solver
+    end
 end
  
 module Pb::Controllers
@@ -275,12 +276,13 @@ module Pb::Views
           input :type => :submit, :value => "guess!"
         end
 
+        h3 'Guesses'
+        
         ul.guesses do
             @g.guesses.each do |guess|
                 li guess
             end
         end
-
   end
 end
 
