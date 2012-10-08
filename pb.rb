@@ -20,7 +20,8 @@ module Pb
         require 'rack/session/dalli'
         use Rack::Session::Dalli, :cache => Dalli::Client.new
     else
-        use Rack::Session::Pool
+        require 'camping/session'
+        include Camping::Session
     end
 end 
 
