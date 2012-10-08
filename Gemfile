@@ -8,7 +8,7 @@ gem 'json'
 gem 'pusher'
 gem 'fast_trie'
 gem 'thin', :group => :development
-gem 'unicorn', :group => :production
+gem 'unicorn', :platforms => :ruby
 
 gem "pg", :group => :production
 gem "dalli", :group => :production
