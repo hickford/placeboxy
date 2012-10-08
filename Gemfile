@@ -1,4 +1,5 @@
-﻿source "https://rubygems.org"
+ruby "1.9.3"
+source "https://rubygems.org"
 
 gem 'camping'
 gem 'activerecord'
@@ -7,6 +8,6 @@ gem 'json'
 gem 'pusher'
 gem 'fast_trie'
 gem "pg", :group => :production
-gem "memcache", :group => :production
+gem "memcached", :group => :production
 gem "sqlite3", :group => :development
 
