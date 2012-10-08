@@ -7,7 +7,8 @@ gem 'markaby'
 gem 'json'
 gem 'pusher'
 gem 'fast_trie'
-gem "pg", :group => :production
-gem "memcached", :group => :production
-gem "sqlite3", :group => :development
 
+gem "pg", :group => :production
+gem "memcache-client", :group => :production
+
+gem "sqlite3", :group => :development
