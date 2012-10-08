@@ -1,6 +1,8 @@
 #!/usr/bin/ruby
 require 'erb'
 require 'yaml'
+$stdout.sync = true
+
 environment = ENV['RACK_ENV'] || 'development'
 dbconfig = YAML.load(ERB.new(File.read('config/database.yml')).result)
 
