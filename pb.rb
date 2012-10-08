@@ -23,6 +23,18 @@ module Pb
         require 'camping/session'
         include Camping::Session
     end
+    
+    if environment == 'development'
+        # Pusher.app_id , Pusher.key , Pusher.secret
+        require_relative 'config/pusher.rb'
+    end
+    
+    File.open('boggle.dict') do |dictionary|
+        puts "importing dictionary #{dictionary} (this takes a few seconds)"
+        $solver = BoggleSolver::Solver.new(dictionary)
+        puts $solver
+    end
+
 end 
 
 module Pb::Models
@@ -67,17 +79,6 @@ end
 
 def Pb.create
     Pb::Models.create_schema
-
-    environment = ENV['RACK_ENV'] || 'development'
-    if environment == 'development'
-        # Pusher.app_id , Pusher.key , Pusher.secret
-        require './config/pusher.rb'
-    end
-    File.open('boggle.dict') do |dictionary|
-        puts "importing dictionary #{dictionary} (this takes a few seconds)"
-        $solver = BoggleSolver::Solver.new(dictionary)
-        puts $solver
-    end
 end
  
 module Pb::Controllers
