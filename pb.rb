@@ -16,7 +16,9 @@ module Pb
     set :secret, secret
     
     if environment == 'production'
+        require 'dalli'
         require 'rack/session/dalli'
+        set :cache, Dalli::Client.new
         use Rack::Session::Dalli
     else
         use Rack::Session::Pool
