@@ -4,19 +4,20 @@ require 'pusher'
 require 'erb'
 require 'securerandom'
 require 'json'
+
 require_relative 'boggle_solver'
 require_relative 'boggle_board_generator'
 
 Camping.goes :Pb
   
 module Pb 
-     # secret
     environment = ENV['RACK_ENV'] || 'development'
     secret = ENV['SESSION_SECRET'] || SecureRandom.hex
     set :secret, secret
     
     if environment == 'production'
-        use Rack::Session::Memcache
+        require 'rack/session/dalli'
+        use Rack::Session::Dalli
     else
         use Rack::Session::Pool
     end

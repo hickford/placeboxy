@@ -9,6 +9,6 @@ gem 'pusher'
 gem 'fast_trie'
 
 gem "pg", :group => :production
-gem "memcache-client", :group => :production
+gem "dalli", :group => :production
 
 gem "sqlite3", :group => :development

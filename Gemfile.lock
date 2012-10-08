@@ -8,12 +8,12 @@ GEM
     camping (2.1.523)
       mab
       rack (>= 1.0)
+    dalli (2.2.1)
     fast_trie (0.5.0)
     json (1.7.5)
     mab (0.0.2)
     markaby (0.7.2)
       builder (>= 2.0.0)
-    memcache-client (1.8.5)
     multi_json (1.3.6)
     pg (0.14.1)
     pg (0.14.1-x86-mingw32)
@@ -32,10 +32,10 @@ PLATFORMS
 DEPENDENCIES
   activerecord
   camping
+  dalli
   fast_trie
   json
   markaby
-  memcache-client
   pg
   pusher
   sqlite3
