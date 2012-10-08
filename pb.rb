@@ -1,28 +1,25 @@
 #!/usr/bin/ruby
 require 'camping'
-require 'camping/session'
 require 'pusher'
 require 'erb'
 require 'securerandom'
+require 'json'
 require_relative 'boggle_solver'
 require_relative 'boggle_board_generator'
-require 'json'
+
 Camping.goes :Pb
   
 module Pb 
      # secret
-    environment = ENV['DATABASE_URL'] ? 'production' : 'development'
-    configsession = 'config/session'
-    if File.exists?(configsession)
-        secret = File.read(configsession)
-    else
-        secret = SecureRandom.hex 
-        if environment == 'development'
-            File.open(configsession, 'w') {|f| f.write(secret) }
-        end
-    end   
+    environment = ENV['RACK_ENV'] || 'development'
+    secret = ENV['SESSION_SECRET'] || SecureRandom.hex
     set :secret, secret
-    include Camping::Session   
+    
+    if environment == 'production'
+        use Rack::Session::Memcache
+    else
+        use Rack::Session::Pool
+    end
 end 
 
 module Pb::Models
@@ -38,7 +35,6 @@ module Pb::Models
           t.text   :board
           t.text   :solutions
           t.text   :guesses
-          # This gives us created_at and updated_at
           t.timestamps
           end
         end
@@ -56,7 +52,6 @@ module Pb::Models
           create_table User.table_name do |t|
           t.string :name
           t.integer :score, :default => 0
-          # This gives us created_at and updated_at
           t.timestamps
           end
          end
