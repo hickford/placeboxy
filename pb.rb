@@ -18,8 +18,7 @@ module Pb
     if environment == 'production'
         require 'dalli'
         require 'rack/session/dalli'
-        set :cache, Dalli::Client.new
-        use Rack::Session::Dalli
+        use Rack::Session::Dalli, :cache => Dalli::Client.new
     else
         use Rack::Session::Pool
     end
