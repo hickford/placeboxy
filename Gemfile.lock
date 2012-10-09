@@ -20,6 +20,8 @@ GEM
     multi_json (1.3.6)
     pg (0.14.1)
     pg (0.14.1-x86-mingw32)
+    puma (1.6.3)
+      rack (~> 1.2)
     pusher (0.10.0)
       multi_json (~> 1.0)
       signature (~> 0.1.4)
@@ -49,6 +51,7 @@ DEPENDENCIES
   json
   markaby
   pg
+  puma
   pusher
   sqlite3
   thin

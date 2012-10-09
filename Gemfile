@@ -9,6 +9,7 @@ gem 'pusher'
 gem 'fast_trie'
 gem 'thin', :group => :development
 gem 'unicorn', :platforms => :ruby
+gem 'puma', :platforms => :ruby
 
 gem "pg", :group => :production
 gem "dalli", :group => :production
