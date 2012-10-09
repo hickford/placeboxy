@@ -1,10 +1,19 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activerecord (2.3.14)
-      activesupport (= 2.3.14)
-    activesupport (2.3.14)
-    builder (3.1.3)
+    activemodel (3.2.8)
+      activesupport (= 3.2.8)
+      builder (~> 3.0.0)
+    activerecord (3.2.8)
+      activemodel (= 3.2.8)
+      activesupport (= 3.2.8)
+      arel (~> 3.0.2)
+      tzinfo (~> 0.3.29)
+    activesupport (3.2.8)
+      i18n (~> 0.6)
+      multi_json (~> 1.0)
+    arel (3.0.2)
+    builder (3.0.3)
     camping (2.1.523)
       mab
       rack (>= 1.0)
@@ -12,14 +21,12 @@ GEM
     dalli (2.2.1)
     eventmachine (1.0.0)
     fast_trie (0.5.0)
+    i18n (0.6.1)
     json (1.7.5)
     kgio (2.7.4)
     mab (0.0.2)
-    markaby (0.7.2)
-      builder (>= 2.0.0)
     multi_json (1.3.6)
     pg (0.14.1)
-    pg (0.14.1-x86-mingw32)
     puma (1.6.3)
       rack (~> 1.2)
     pusher (0.10.0)
@@ -29,11 +36,11 @@ GEM
     raindrops (0.10.0)
     signature (0.1.4)
     sqlite3 (1.3.6)
-    sqlite3 (1.3.6-x86-mingw32)
     thin (1.5.0)
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)
       rack (>= 1.0.0)
+    tzinfo (0.3.33)
     unicorn (4.3.1)
       kgio (~> 2.6)
       rack
@@ -41,7 +48,6 @@ GEM
 
 PLATFORMS
   ruby
-  x86-mingw32
 
 DEPENDENCIES
   activerecord
@@ -49,7 +55,6 @@ DEPENDENCIES
   dalli
   fast_trie
   json
-  markaby
   pg
   puma
   pusher

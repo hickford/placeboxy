@@ -6,6 +6,9 @@ $stdout.sync = true
 environment = ENV['RACK_ENV'] || 'development'
 dbconfig = YAML.load(ERB.new(File.read('config/database.yml')).result)
 
+require 'active_record'
+use ActiveRecord::ConnectionAdapters::ConnectionManagement
+
 require './pb.rb'
 # create db folder here?
 # set SESSION_SECRET environment variable?
