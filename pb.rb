@@ -101,7 +101,7 @@ module Pb::Controllers
               @status = 403
               @headers['Content-Type'] = 'text/plain'
               @message = "Authentication failed"
-			  render :error
+              render :error
             end
         end
     end
@@ -115,14 +115,14 @@ module Pb::Controllers
         end
 
         def post
-			if @input.user.nil? || @input.user.strip.empty?
-				return redirect Index
-			end
+            if @input.user.nil? || @input.user.strip.empty?
+                return redirect Index
+            end
             @input.user.strip!
-			u = User.find_or_create_by_name(@input.user)
-			@state.user_name = @input.user
-			@state.user_id = u.id
-			redirect Index
+            u = User.find_or_create_by_name(@input.user)
+            @state.user_name = @input.user
+            @state.user_id = u.id
+            redirect Index
         end
     end
 
@@ -211,15 +211,15 @@ module Pb::Views
       body do
          text! ' <a href="https://github.com/matt-hickford/placeboxy"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>'
             a :href=>R(Index) do
-				h1 "Placeboxy"
+                h1 "Placeboxy"
             end
-			
-			self << yield
-			
-			hr
-					
+            
+            self << yield
+            
+            hr
+                    
             p.connected! ""
-			
+            
             if logged_in?
                 p do
                     a "logout", :href=>R(Logout)
@@ -259,11 +259,11 @@ module Pb::Views
     end
 
     def login
-            form.login! :action => R(Login), :method => :post do
-                p "To play, I need your name"
-                input.input! :type => "text", "name" => :user
-                input :type => :submit, :value => "login"
-            end
+        form.login! :action => R(Login), :method => :post do
+            p "To play, I need your name"
+            input.input! :type => "text", "name" => :user
+            input :type => :submit, :value => "login"
+        end
     end
 
   def game
@@ -286,4 +286,3 @@ module Pb::Views
         end
   end
 end
-
