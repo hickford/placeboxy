@@ -205,7 +205,7 @@ module Pb::Views
         title "Placeboxy"
         #link :rel => 'stylesheet',:type => 'text/css',:href => '/styles.css'
         script "", :type => 'text/javascript', :src => '//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js'
-        script "", :type => 'text/javascript', :src => 'http://js.pusher.com/1.12/pusher.min.js'
+        script "", :type => 'text/javascript', :src => '//js.pusher.com/1.12/pusher.min.js'
         script "", :type => 'text/javascript', :src => '/pb.js'
       end
       body do
