@@ -3,7 +3,7 @@ Placeboxy
 
 A multiplayer web game similar to http://en.wikipedia.org/wiki/Boggle
 
-This is my second project in the Ruby web framework Camping and with WebSockets library Pusher to provide real-time features. The game is deployed on Heroku at http://placeboxy.heroku.com/ 
+This is my second project in the Ruby web framework Camping and with WebSockets library Pusher to provide real-time features. The game is deployed on Heroku at https://placeboxy.herokuapp.com/ 
 
 To do
 --------
